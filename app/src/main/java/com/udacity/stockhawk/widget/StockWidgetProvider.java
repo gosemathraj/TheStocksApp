@@ -1,6 +1,7 @@
 package com.udacity.stockhawk.widget;
 
 import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
@@ -12,6 +13,7 @@ import android.widget.RemoteViews;
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.sync.QuoteSyncJob;
 import com.udacity.stockhawk.ui.MainActivity;
+import com.udacity.stockhawk.ui.StockDetailsActivity;
 
 import java.net.URI;
 
@@ -26,6 +28,8 @@ public class StockWidgetProvider extends AppWidgetProvider {
 
         final int N = appWidgetIds.length;
         for (int i=0; i<N; i++) {
+
+
             int appWidgetId = appWidgetIds[i];
 
             Intent intent = new Intent(context, MainActivity.class);
@@ -41,6 +45,7 @@ public class StockWidgetProvider extends AppWidgetProvider {
             views.setRemoteAdapter(R.id.widget_list,newIntent);
 
             appWidgetManager.updateAppWidget(appWidgetId, views);
+
         }
         super.onUpdate(context, appWidgetManager, appWidgetIds);
 

@@ -3,14 +3,12 @@ package com.udacity.stockhawk.ui;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 
-import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.Legend;
@@ -20,15 +18,14 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.udacity.stockhawk.R;
-import com.udacity.stockhawk.Utils.Parser;
-import com.udacity.stockhawk.Utils.XAxisDateFormatter;
-import com.udacity.stockhawk.Utils.YAxisPriceFormatter;
+import com.udacity.stockhawk.Utility.DateFormatter;
+import com.udacity.stockhawk.Utility.Utils;
 import com.udacity.stockhawk.data.Contract;
 
 import java.util.List;
 
-import yahoofinance.Stock;
-import yahoofinance.YahooFinance;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * Created by iamsparsh on 26/1/17.
@@ -39,18 +36,23 @@ public class StockDetailsActivity extends AppCompatActivity implements LoaderMan
     private static int LOADER_ID = 0;
     private Uri stockUri = null;
     private String historyQuote = null;
-    private LineChart linechart;
-    public String dateFormat = "MMM";
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+    @BindView(R.id.linechart)
+    LineChart linechart;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stock_detail);
+        ButterKnife.bind(this);
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         stockUri = getIntent().getData();
         getSupportLoaderManager().initLoader(LOADER_ID, null, this);
 
-        linechart = (LineChart) findViewById(R.id.linechart);
     }
 
     @Override
@@ -73,6 +75,7 @@ public class StockDetailsActivity extends AppCompatActivity implements LoaderMan
 
         if (data != null && data.moveToFirst()) {
             try {
+                getSupportActionBar().setTitle(data.getString(Contract.Quote.POSITION_SYMBOL));
                 historyQuote = data.getString(data.getColumnIndex(Contract.Quote.COLUMN_HISTORY));
                 setUpLineChart();
 
@@ -89,10 +92,8 @@ public class StockDetailsActivity extends AppCompatActivity implements LoaderMan
     }
 
     private void setUpLineChart() {
-        Pair<Float, List<Entry>> result = Parser.getFormattedStockHistory(historyQuote);
-        List<Entry> dataPairs = result.second;
-        Float referenceTime = result.first;
-        LineDataSet dataSet = new LineDataSet(dataPairs, "");
+        List<Entry> result = Utils.getInstance().getFormattedHistory(historyQuote);
+        LineDataSet dataSet = new LineDataSet(result, "");
         dataSet.setColor(getResources().getColor(R.color.colorPrimary));
         dataSet.setLineWidth(2f);
         dataSet.setDrawHighlightIndicators(false);
@@ -104,7 +105,7 @@ public class StockDetailsActivity extends AppCompatActivity implements LoaderMan
         linechart.setData(lineData);
 
         XAxis xAxis = linechart.getXAxis();
-        xAxis.setValueFormatter(new XAxisDateFormatter(dateFormat, referenceTime));
+        xAxis.setValueFormatter(new DateFormatter());
         xAxis.setDrawGridLines(false);
         xAxis.setAxisLineColor(getResources().getColor(R.color.colorPrimary));
         xAxis.setAxisLineWidth(1.5f);
@@ -116,7 +117,6 @@ public class StockDetailsActivity extends AppCompatActivity implements LoaderMan
         yAxisRight.setEnabled(false);
 
         YAxis yAxis = linechart.getAxisLeft();
-        yAxis.setValueFormatter(new YAxisPriceFormatter());
         yAxis.setDrawGridLines(false);
         yAxis.setAxisLineColor(getResources().getColor(R.color.colorPrimary));
         yAxis.setAxisLineWidth(1.5f);
@@ -138,6 +138,6 @@ public class StockDetailsActivity extends AppCompatActivity implements LoaderMan
         description.setText(" ");
         linechart.setDescription(description);
         linechart.setExtraOffsets(10, 0, 0, 10);
-        linechart.animateX(1500, Easing.EasingOption.Linear);
+        //linechart.animateX(1500, Easing.EasingOption.Linear);
     }
 }
